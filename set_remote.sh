@@ -2,7 +2,7 @@
 set -e
 
 ORIGIN_URL="git@github.com:ictrektech/Kokoro-FastAPI.git"
-GH_URL="git@github.com:ictrektech/Kokoro-FastAPI.git"
+GH_URL="git@github.com:remsky/Kokoro-FastAPI.git"
 
 # 设置 origin
 if git remote | grep -q "^origin$"; then

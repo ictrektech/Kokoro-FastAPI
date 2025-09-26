@@ -13,15 +13,12 @@ dependencies = [
     "pydantic-settings==2.7.0",
     "python-dotenv==1.0.1",
     "sqlalchemy==2.0.27",
-
     # ML/DL Base
     "numpy>=1.26.0",
     "scipy==1.14.1",
-
     # Audio processing
     "soundfile==0.13.0",
     "regex==2024.11.6",
-
     # Utilities
     "aiofiles==23.2.1",
     "tqdm==4.67.1",
@@ -52,10 +49,9 @@ gpu = [
 cpu = [
     "torch==2.7.1",
 ]
-# Jetson / L4T: 由 Dockerfile 中 pip 安装官方 wheel，这里不再声明 torch，避免 uv 校验出错
+# Jetson / L4T：在 Dockerfile 里用 pip 安装官方 wheel，这里不再声明 torch
 l4t = [
 ]
-
 test = [
     "pytest==8.3.5",
     "pytest-cov==6.0.0",
@@ -66,7 +62,6 @@ test = [
 ]
 
 [tool.uv]
-# 三组互斥，防止误选
 conflicts = [
   [ { extra = "cpu" }, { extra = "gpu" } ],
   [ { extra = "cpu" }, { extra = "l4t" } ],
@@ -74,9 +69,8 @@ conflicts = [
 ]
 
 [tool.uv.sources]
-# x86 平台仍按你的原配置：从 PyTorch 官方 index 拉取
 torch = [
-    { index = "pytorch-cpu",  extra = "cpu" },
+    { index = "pytorch-cpu", extra = "cpu" },
     { index = "pytorch-cuda", extra = "gpu" },
 ]
 

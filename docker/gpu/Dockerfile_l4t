@@ -1,45 +1,44 @@
 FROM nvcr.io/nvidia/l4t-jetpack:r36.4.0
 
-# PyPI 国内镜像（任选其一，或都配）
 ENV UV_INDEX_URL=https://pypi.tuna.tsinghua.edu.cn/simple
 ENV UV_EXTRA_INDEX_URL=https://mirrors.aliyun.com/pypi/simple
-
-# 提高 uv 的网络容错
-ENV UV_HTTP_TIMEOUT=120
-ENV UV_HTTP_RETRIES=5
+ENV UV_HTTP_TIMEOUT=300
+ENV UV_HTTP_RETRIES=8
 ENV UV_HTTP_CONCURRENCY=4
 
-# Install Python and other dependencies
-RUN apt-get update -y &&  \
-    apt-get install -y python3.10 python3-venv espeak-ng espeak-ng-data git libsndfile1 curl ffmpeg g++ &&  \
-    apt-get clean && rm -rf /var/lib/apt/lists/* && \
-    mkdir -p /usr/share/espeak-ng-data &&  \
-    ln -s /usr/lib/*/espeak-ng-data/* /usr/share/espeak-ng-data/ && \
-    curl -LsSf https://astral.sh/uv/install.sh | sh && \
-    mv /root/.local/bin/uv /usr/local/bin/ && \
-    mv /root/.local/bin/uvx /usr/local/bin/ && \
-    useradd -m -u 1001 appuser && \
-    mkdir -p /app/api/src/models/v1_0 && \
+RUN set -eux; \
+    mkdir -p /tmp && chmod 1777 /tmp; \
+    apt-get update; \
+    apt-get install -y --no-install-recommends \
+        python3.10 python3-venv ca-certificates gnupg \
+        espeak-ng espeak-ng-data git libsndfile1 curl ffmpeg g++; \
+    rm -rf /var/lib/apt/lists/*
+
+RUN set -eux; \
+    mkdir -p /usr/share/espeak-ng-data; \
+    ln -s /usr/lib/*/espeak-ng-data/* /usr/share/espeak-ng-data/ || true; \
+    curl -LsSf https://astral.sh/uv/install.sh | sh; \
+    mv /root/.local/bin/uv /usr/local/bin/; \
+    mv /root/.local/bin/uvx /usr/local/bin/; \
+    useradd -m -u 1001 appuser; \
+    mkdir -p /app/api/src/models/v1_0; \
     chown -R appuser:appuser /app
 
 USER appuser
 WORKDIR /app
 
-# Copy dependency files
 COPY --chown=appuser:appuser pyproject.toml ./pyproject.toml
 
-# Install dependencies with GPU extras
-RUN uv venv --python 3.10 && \
-    uv sync --extra gpu --no-cache
+# 如果采用 pyproject 里配置镜像 URL（方案A），这两行就够
+RUN uv venv --python 3.10 && uv sync --extra l4t --no-cache
 
-# Copy project files including models
+# 如果采用 Dockerfile 兜底（方案B），在这里加上前面那段“兜底手动装 wheel”
+
 COPY --chown=appuser:appuser api ./api
 COPY --chown=appuser:appuser web ./web
 COPY --chown=appuser:appuser docker/scripts/ ./
 RUN chmod +x ./entrypoint.sh
 
-
-# Set all environment variables in one go
 ENV PATH="/app/.venv/bin:$PATH" \
     PYTHONUNBUFFERED=1 \
     PYTHONPATH=/app:/app/api \
@@ -48,13 +47,11 @@ ENV PATH="/app/.venv/bin:$PATH" \
     PHONEMIZER_ESPEAK_PATH=/usr/bin \
     PHONEMIZER_ESPEAK_DATA=/usr/share/espeak-ng-data \
     ESPEAK_DATA_PATH=/usr/share/espeak-ng-data \
-    DEVICE="gpu"
+    DEVICE="gpu" \
+    DOWNLOAD_MODEL=true
 
-ENV DOWNLOAD_MODEL=true
-# Download model if enabled
 RUN if [ "$DOWNLOAD_MODEL" = "true" ]; then \
-    python download_model.py --output api/src/models/v1_0; \
+      python download_model.py --output api/src/models/v1_0; \
     fi
 
-# Run FastAPI server through entrypoint.sh
 CMD ["./entrypoint.sh"]

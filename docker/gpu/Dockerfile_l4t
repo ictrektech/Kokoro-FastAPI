@@ -10,9 +10,13 @@ RUN set -eux; \
     mkdir -p /tmp && chmod 1777 /tmp; \
     apt-get update; \
     apt-get install -y --no-install-recommends \
-        python3.10 python3-venv ca-certificates gnupg \
+        python3.10 python3-venv ca-certificates gnupg rustc cargo \
         espeak-ng espeak-ng-data git libsndfile1 curl ffmpeg g++; \
     rm -rf /var/lib/apt/lists/*
+
+
+# 国内网络偶发时，cargo 走 CLI 更稳
+ENV CARGO_NET_GIT_FETCH_WITH_CLI=true
 
 RUN apt-get update -y &&  \
     apt-get install -y python3.10 python3-venv espeak-ng espeak-ng-data git libsndfile1 curl ffmpeg g++ &&  \

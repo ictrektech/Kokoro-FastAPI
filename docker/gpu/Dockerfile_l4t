@@ -42,10 +42,11 @@ RUN uv venv --python 3.10 && uv sync --extra l4t --no-cache
 # Jetson/L4T 专用：用 pip 安装 NVIDIA 官方 PyTorch wheel（规避 uv 对 JP6.1 wheel 的版本校验）
 # 同时按惯例先 pin numpy 1.26.1 再装 torch
 RUN set -eux; \
-    . .venv/bin/activate; \
-    python -m pip install --no-cache-dir "numpy==1.26.1" && \
-    python -m pip install --no-cache-dir \
-      https://developer.download.nvidia.com/compute/redist/jp/v61/pytorch/torch-2.5.0a0+872d972e41.nv24.08.17622132-cp310-cp310-linux_aarch64.whl
+    /app/.venv/bin/python -m ensurepip --upgrade; \
+    /app/.venv/bin/python -m pip install --upgrade pip setuptools wheel; \
+    /app/.venv/bin/python -m pip install --no-cache-dir "numpy==1.26.1"; \
+    /app/.venv/bin/python -m pip install --no-cache-dir \
+    https://developer.download.nvidia.com/compute/redist/jp/v61/pytorch/torch-2.5.0a0+872d972e41.nv24.08.17622132-cp310-cp310-linux_aarch64.whl
 
 COPY --chown=appuser:appuser api ./api
 COPY --chown=appuser:appuser web ./web

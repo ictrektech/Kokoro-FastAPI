@@ -46,7 +46,9 @@ RUN set -eux; \
     /app/.venv/bin/python -m ensurepip --upgrade; \
     /app/.venv/bin/python -m pip install --upgrade pip setuptools wheel; \
     /app/.venv/bin/python -m pip install --no-cache-dir \
-    https://developer.download.nvidia.com/compute/redist/jp/v61/pytorch/torch-2.5.0a0+872d972e41.nv24.08.17622132-cp310-cp310-linux_aarch64.whl
+    https://pypi.jetson-ai-lab.io/jp6/cu126/+f/590/92ab729aee2b8/torch-2.8.0-cp310-cp310-linux_aarch64.whl
+    # https://developer.download.nvidia.com/compute/redist/jp/v61/pytorch/torch-2.5.0a0+872d972e41.nv24.08.17622132-cp310-cp310-linux_aarch64.whl
+
 # /app/.venv/bin/python -m pip install --no-cache-dir "numpy==1.26.1"; \
 COPY --chown=appuser:appuser api ./api
 COPY --chown=appuser:appuser web ./web

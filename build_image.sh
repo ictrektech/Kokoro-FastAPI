@@ -73,6 +73,6 @@ fi
 
 
 # 构建并推送镜像
-docker build -t swr.cn-southwest-2.myhuaweicloud.com/ictrek/${IMG_NAME}:${TAG} -f Dockerfile .
+docker build -t swr.cn-southwest-2.myhuaweicloud.com/ictrek/${IMG_NAME}:${TAG} -f $PROFILE .
 
 docker push swr.cn-southwest-2.myhuaweicloud.com/ictrek/${IMG_NAME}:${TAG}

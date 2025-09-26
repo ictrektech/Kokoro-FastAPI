@@ -11,7 +11,7 @@ RUN set -eux; \
     apt-get update; \
     apt-get install -y --no-install-recommends \
         python3.10 python3-venv ca-certificates gnupg rustc cargo \
-        espeak-ng espeak-ng-data git libsndfile1 curl ffmpeg g++; \
+        espeak-ng espeak-ng-data git libsndfile1 curl ffmpeg g++ libopenblas0; \
     rm -rf /var/lib/apt/lists/*
 
 # 国内网络偶发时，cargo 走 CLI 更稳
@@ -37,7 +37,8 @@ WORKDIR /app
 COPY --chown=appuser:appuser pyproject.toml ./pyproject.toml
 
 # 用 l4t 额外依赖同步（此时 l4t 组不再包含 torch）
-RUN uv venv --python 3.10 && uv sync --extra l4t --no-cache
+# RUN uv venv --python 3.10 && uv sync --extra l4t --no-cache
+RUN uv venv --python 3.10 && uv sync --extra l4t --no-cache --no-install-package torch
 
 # Jetson/L4T 专用：用 pip 安装 NVIDIA 官方 PyTorch wheel（规避 uv 对 JP6.1 wheel 的版本校验）
 # 同时按惯例先 pin numpy 1.26.1 再装 torch

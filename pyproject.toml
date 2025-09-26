@@ -49,7 +49,6 @@ gpu = [
 cpu = [
     "torch==2.7.1",
 ]
-# Jetson / L4T：在 Dockerfile 里用 pip 安装官方 wheel，这里不再声明 torch
 l4t = [
 ]
 test = [

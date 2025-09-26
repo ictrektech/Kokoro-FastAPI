@@ -63,9 +63,9 @@ DATE=$(date +%Y%m%d)
 
 # 检查 version.txt
 if [[ -f "VERSION" ]]; then
-    VERSION=$(cat version.txt | tr -d ' \t\n\r')
+    VERSION=$(cat VERSION | tr -d ' \t\n\r')
     TAG="${PROFILE_TAG}_${VERSION}_${DATE}"
-    echo "Using version from version.txt: ${VERSION}"
+    echo "Using version from VERSION: ${VERSION}"
 else
     TAG="${PROFILE_TAG}_${DATE}"
     echo "No VERSION file found, using default tag format."

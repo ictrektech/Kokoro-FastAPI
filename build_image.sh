@@ -48,7 +48,7 @@ case "$PROFILE" in
   docker/cpu/Dockerfile)
     PROFILE_TAG=""
     ;;
-  docker/cpu/Dockerfile_l4t)
+  docker/gpu/Dockerfile_l4t)
     PROFILE_TAG="${ARCH_TAG}_l4t"
     ;;
   *)

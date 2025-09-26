@@ -72,7 +72,6 @@ conflicts = [
 torch = [
     { index = "pytorch-cpu", extra = "cpu" },
     { index = "pytorch-cuda", extra = "gpu" },
-    { index = "pytorch-l4t", extra = "l4t" },
 ]
 
 [[tool.uv.index]]

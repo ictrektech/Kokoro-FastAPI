@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # build_image.sh
-IMG_NAME="kokoro" #
+IMG_NAME="kokoro_server" #
 
 
 # 获取架构
@@ -23,17 +23,52 @@ case "$ARCH" in
     ;;
 esac
 
+
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    --profile)
+      PROFILE="$2"
+      shift 2
+      ;;
+    *)
+      echo "Unknown option: $1"
+      exit 1
+      ;;
+  esac
+done
+
+# 根据 PROFILE 生成 PROFILE_TAG
+case "$PROFILE" in
+  docker/gpu/Dockerfile)
+    PROFILE_TAG="${ARCH_TAG}_cu128"
+    ;;
+  docker/gpu/Dockerfile_cu124)
+    PROFILE_TAG="${ARCH_TAG}_cu124"
+    ;;
+  docker/cpu/Dockerfile)
+    PROFILE_TAG=""
+    ;;
+  docker/cpu/Dockerfile_l4t)
+    PROFILE_TAG="${ARCH_TAG}_l4t"
+    ;;
+  *)
+    echo "Unsupported profile: $PROFILE"
+    exit 1
+    ;;
+esac
+
+
 # 获取日期
 DATE=$(date +%Y%m%d)
 
 # 检查 version.txt
 if [[ -f "VERSION" ]]; then
     VERSION=$(cat version.txt | tr -d ' \t\n\r')
-    TAG="${ARCH_TAG}_${VERSION}_${DATE}"
+    TAG="${PROFILE_TAG}_${VERSION}_${DATE}"
     echo "Using version from version.txt: ${VERSION}"
 else
-    TAG="${ARCH_TAG}_${DATE}"
-    echo "No version.txt found, using default tag format."
+    TAG="${PROFILE_TAG}_${DATE}"
+    echo "No VERSION file found, using default tag format."
 fi
 
 

@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-ORIGIN_URL="git@github.com:ictrektech/homeassistant-mcp.git"
+ORIGIN_URL="git@github.com:ictrektech/Kokoro-FastAPI.git"
 GH_URL="git@github.com:ictrektech/Kokoro-FastAPI.git"
 
 # 设置 origin

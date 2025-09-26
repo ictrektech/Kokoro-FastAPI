@@ -14,14 +14,18 @@ RUN set -eux; \
         espeak-ng espeak-ng-data git libsndfile1 curl ffmpeg g++; \
     rm -rf /var/lib/apt/lists/*
 
-RUN set -eux; \
-    mkdir -p /usr/share/espeak-ng-data; \
-    ln -s /usr/lib/*/espeak-ng-data/* /usr/share/espeak-ng-data/ || true; \
-    curl -LsSf https://astral.sh/uv/install.sh | sh; \
-    mv /root/.local/bin/uv /usr/local/bin/; \
-    mv /root/.local/bin/uvx /usr/local/bin/; \
-    useradd -m -u 1001 appuser; \
-    mkdir -p /app/api/src/models/v1_0; \
+RUN apt-get update -y &&  \
+    apt-get install -y python3.10 python3-venv espeak-ng espeak-ng-data git libsndfile1 curl ffmpeg g++ &&  \
+    apt-get clean && rm -rf /var/lib/apt/lists/* && \
+    mkdir -p /usr/share/espeak-ng-data &&  \
+    ln -s /usr/lib/*/espeak-ng-data/* /usr/share/espeak-ng-data/ && \
+    curl -LsSf https://astral.sh/uv/install.sh -o install.sh && \
+    sed -i 's#https://github.com#https://gh-proxy.com/https://github.com#g' install.sh &&\
+    sh install.sh && \
+    mv /root/.local/bin/uv /usr/local/bin/ && \
+    mv /root/.local/bin/uvx /usr/local/bin/ && \
+    useradd -m -u 1001 appuser && \
+    mkdir -p /app/api/src/models/v1_0 && \
     chown -R appuser:appuser /app
 
 USER appuser

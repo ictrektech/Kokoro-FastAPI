@@ -1,68 +1,36 @@
-FROM nvcr.io/nvidia/l4t-jetpack:r36.4.0
+# ✅ 直接用自带 PyTorch 的镜像（JP6.1 / L4T r36.4.0）
+FROM dustynv/l4t-pytorch:r36.4.0
 
+# 你之前的国内加速、系统依赖（按需保留即可；不需要再补 CUDA 运行库）
 ENV UV_INDEX_URL=https://pypi.tuna.tsinghua.edu.cn/simple
 ENV UV_EXTRA_INDEX_URL=https://mirrors.aliyun.com/pypi/simple
-ENV UV_HTTP_TIMEOUT=300
-ENV UV_HTTP_RETRIES=8
-ENV UV_HTTP_CONCURRENCY=4
+ENV UV_HTTP_TIMEOUT=300 UV_HTTP_RETRIES=8 UV_HTTP_CONCURRENCY=4
 
-# 一次性安装所需依赖（去重+正确顺序）
-RUN set -eux; \
-    apt-get update; \
-    apt-get install -y --no-install-recommends \
-        # 基础
-        ca-certificates gnupg curl git \
-        python3.10 python3-venv python3-dev \
-        build-essential pkg-config g++ \
-        ffmpeg libsndfile1 \
-        # 语音
-        espeak-ng espeak-ng-data \
-        # Rust 生态（给 SudachiPy 等）
-        rustc cargo \
-        # 线代库（PyTorch 运行期需要）
-        libopenblas0 \
-        # CUDA 运行库集合（含 cublas/cusolver/cusparse/curand/cufft/cudart 等）
-        cuda-libraries-12-4; \
-    # 一些发行渠道将 cuSPARSELt / cuDSS 拆成单包，尝试安装（若无该包名则忽略）
-    apt-get install -y --no-install-recommends libcusparse-12-0      || true; \
-    apt-get install -y --no-install-recommends libcusparseLt-12-0    || true; \
-    apt-get install -y --no-install-recommends libcudss-12-0         || true; \
-    apt-get install -y --no-install-recommends libcusparse12         || true; \
-    apt-get install -y --no-install-recommends libcusparseLt12       || true; \
-    apt-get install -y --no-install-recommends libcudss12            || true; \
-    rm -rf /var/lib/apt/lists/*
+# 仅安装你项目用到的系统包（去掉 torch/CUDA 相关的那堆）
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      espeak-ng espeak-ng-data libsndfile1 ffmpeg git curl \
+      python3.10 python3-venv python3-dev build-essential pkg-config \
+    && rm -rf /var/lib/apt/lists/* \
+    && ln -sf /usr/lib/*/espeak-ng-data/* /usr/share/espeak-ng-data/ || true
 
-# 国内网络偶发时，cargo 走 CLI 更稳
-ENV CARGO_NET_GIT_FETCH_WITH_CLI=true
+# 安装 uv（保持你的原做法/脚本不变）
+RUN curl -LsSf https://astral.sh/uv/install.sh -o install.sh \
+ && sed -i 's#https://github.com#https://gh-proxy.com/https://github.com#g' install.sh \
+ && sh install.sh \
+ && mv /root/.local/bin/uv /usr/local/bin/ \
+ && mv /root/.local/bin/uvx /usr/local/bin/
 
-# espeak-ng 数据链接 + 安装 uv（保持你的原逻辑）
-RUN set -eux; \
-    mkdir -p /usr/share/espeak-ng-data; \
-    ln -s /usr/lib/*/espeak-ng-data/* /usr/share/espeak-ng-data/ || true; \
-    curl -LsSf https://astral.sh/uv/install.sh -o install.sh; \
-    sed -i 's#https://github.com#https://gh-proxy.com/https://github.com#g' install.sh; \
-    sh install.sh; \
-    mv /root/.local/bin/uv /usr/local/bin/; \
-    mv /root/.local/bin/uvx /usr/local/bin/; \
-    useradd -m -u 1001 appuser; \
-    mkdir -p /app/api/src/models/v1_0; \
-    chown -R appuser:appuser /app
-
+# 非 root 用户
+RUN useradd -m -u 1001 appuser && mkdir -p /app/api/src/models/v1_0 && chown -R appuser:appuser /app
 USER appuser
 WORKDIR /app
 
+# 依赖：依旧用 uv，但**不要安装 torch**（镜像里已有）
 COPY --chown=appuser:appuser pyproject.toml ./pyproject.toml
+RUN uv venv --python 3.10 \
+ && uv sync --extra l4t --no-cache --no-install-package torch --no-install-package torchvision --no-install-package torchaudio
 
-# 仅安装 l4t 组（跳过 torch，后面用 pip 装 Jetson 轮子）
-RUN uv venv --python 3.10 && uv sync --extra l4t --no-cache --no-install-package torch
-
-# Jetson/L4T：启用 pip 并安装 PyTorch（保持你当前的镜像源与 wheel 链接）
-RUN set -eux; \
-    /app/.venv/bin/python -m ensurepip --upgrade; \
-    PIP_INDEX_URL=https://mirrors.cloud.tencent.com/pypi/simple /app/.venv/bin/python -m pip install --upgrade pip setuptools wheel; \
-    /app/.venv/bin/python -m pip install --no-cache-dir \
-      https://pypi.jetson-ai-lab.io/jp6/cu126/+f/590/92ab729aee2b8/torch-2.8.0-cp310-cp310-linux_aarch64.whl
-
+# 拷贝代码
 COPY --chown=appuser:appuser api ./api
 COPY --chown=appuser:appuser web ./web
 COPY --chown=appuser:appuser docker/scripts/ ./

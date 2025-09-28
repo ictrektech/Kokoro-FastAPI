@@ -30,6 +30,12 @@ COPY --chown=appuser:appuser pyproject.toml ./pyproject.toml
 RUN uv venv --python 3.10 --system-site-packages \
  && uv sync --extra l4t --no-cache --no-install-package torch --no-install-package torchvision --no-install-package torchaudio
 
+# ✅ 追加：固定安装 NumPy 1.x（避免被解析到 2.x）
+RUN set -eux; \
+    /app/.venv/bin/python -m ensurepip --upgrade; \
+    PIP_INDEX_URL="${UV_INDEX_URL}" /app/.venv/bin/python -m pip install --upgrade pip setuptools wheel; \
+    PIP_INDEX_URL="${UV_INDEX_URL}" /app/.venv/bin/python -m pip install --no-cache-dir "numpy>=1.26,<2.0"
+
 # 拷贝代码
 COPY --chown=appuser:appuser api ./api
 COPY --chown=appuser:appuser web ./web

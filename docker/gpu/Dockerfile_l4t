@@ -27,7 +27,7 @@ WORKDIR /app
 
 # 依赖：依旧用 uv，但**不要安装 torch**（镜像里已有）
 COPY --chown=appuser:appuser pyproject.toml ./pyproject.toml
-RUN uv venv --python 3.10 \
+RUN uv venv --python 3.10 --system-site-packages \
  && uv sync --extra l4t --no-cache --no-install-package torch --no-install-package torchvision --no-install-package torchaudio
 
 # 拷贝代码
@@ -44,7 +44,7 @@ ENV PATH="/app/.venv/bin:$PATH" \
     PHONEMIZER_ESPEAK_PATH=/usr/bin \
     PHONEMIZER_ESPEAK_DATA=/usr/share/espeak-ng-data \
     ESPEAK_DATA_PATH=/usr/share/espeak-ng-data \
-    DEVICE="gpu" \
+    DEVICE="l4t" \
     DOWNLOAD_MODEL=true
 
 RUN if [ "$DOWNLOAD_MODEL" = "true" ]; then \

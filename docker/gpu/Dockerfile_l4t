@@ -14,7 +14,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && ln -sf /usr/lib/*/espeak-ng-data/* /usr/share/espeak-ng-data/ || true
 
 # 安装 uv（保持你的原做法/脚本不变）
-RUN curl -LsSf https://astral.sh/uv/install.sh -o install.sh \
+RUN curl -LsSf https://gh-proxy.com/https://github.com/astral-sh/uv/releases/latest/download/uv-installer.sh -o install.sh \
  && sed -i 's#https://github.com#https://gh-proxy.com/https://github.com#g' install.sh \
  && sh install.sh \
  && mv /root/.local/bin/uv /usr/local/bin/ \

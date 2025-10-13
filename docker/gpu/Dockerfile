@@ -1,5 +1,4 @@
 FROM --platform=$BUILDPLATFORM nvidia/cuda:12.8.1-base-ubuntu24.04
-
 # Install Python and other dependencies
 RUN apt-get update -y &&  \
     apt-get install -y python3.10 python3-venv espeak-ng espeak-ng-data git libsndfile1 curl ffmpeg g++ &&  \
@@ -12,7 +11,7 @@ RUN apt-get update -y &&  \
     useradd -m -u 1001 appuser && \
     mkdir -p /app/api/src/models/v1_0 && \
     chown -R appuser:appuser /app
-    
+
 USER appuser
 WORKDIR /app
 
@@ -40,7 +39,7 @@ ENV PATH="/app/.venv/bin:$PATH" \
     PHONEMIZER_ESPEAK_DATA=/usr/share/espeak-ng-data \
     ESPEAK_DATA_PATH=/usr/share/espeak-ng-data \
     DEVICE="gpu"
-    
+
 ENV DOWNLOAD_MODEL=true
 # Download model if enabled
 RUN if [ "$DOWNLOAD_MODEL" = "true" ]; then \

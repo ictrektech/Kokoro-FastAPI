@@ -67,6 +67,11 @@ conflicts = [
   [ { extra = "gpu" }, { extra = "l4t" } ],
 ]
 
+[dependency-groups]
+l4t = ["kokoro-fastapi[l4t]"]
+gpu = ["kokoro-fastapi[gpu]"]
+cpu = ["kokoro-fastapi[cpu]"]
+
 [tool.uv.sources]
 torch = [
     { index = "pytorch-cpu", extra = "cpu" },

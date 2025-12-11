@@ -513,6 +513,35 @@ Monitor system state and resource usage with these endpoints:
 Useful for debugging resource exhaustion or performance issues.
 </details>
 
+<details>
+<summary>Logging</summary>
+
+Global API [loguru logging level](https://loguru.readthedocs.io/en/stable/api/logger.html#levels) can be set using the `API_LOG_LEVEL` environment variable. Defaults to `DEBUG`.
+
+**Docker**
+
+Modify the appropriate compose `yml` or append to command line.
+```bash
+docker run --env 'API_LOG_LEVEL=WARNING' ...
+```
+
+**Direct via UV**
+
+Linux and macOS
+```bash
+export API_LOG_LEVEL=WARNING
+./start-cpu.sh OR
+./start-gpu.sh
+```
+
+Windows
+```powershell
+$env:API_LOG_LEVEL = 'WARNING'
+.\start-cpu.ps1 OR
+.\start-gpu.ps1
+```
+</details>
+
 ## Known Issues & Troubleshooting
 
 <details>
@@ -632,3 +661,15 @@ This project is licensed under the Apache License 2.0 - see below for details:
 
 The full Apache 2.0 license text can be found at: https://www.apache.org/licenses/LICENSE-2.0
 </details>
+
+</details open>
+
+## Contributor Stats
+![Alt](https://repobeats.axiom.co/api/embed/f9694366bf96febc749d592316ff0a275fe77219.svg "Repobeats analytics image")
+</details>
+
+<a href="https://github.com/remsky/Kokoro-FastAPI/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=remsky/Kokoro-FastAPI" />
+</a>
+
+Made with [contrib.rocks](https://contrib.rocks).

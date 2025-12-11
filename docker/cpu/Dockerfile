@@ -12,20 +12,27 @@ ENV UV_HTTP_CONCURRENCY=4
 # Install dependencies and check espeak location
 # Rust is required to build sudachipy and pyopenjtalk-plus
 RUN apt-get update -y &&  \
-    apt-get install -y espeak-ng espeak-ng-data git libsndfile1 curl ffmpeg g++ && \
+    apt-get install -y espeak-ng espeak-ng-data git libsndfile1 curl ffmpeg g++ cmake && \
     apt-get clean && rm -rf /var/lib/apt/lists/* && \
     mkdir -p /usr/share/espeak-ng-data && \
     ln -s /usr/lib/*/espeak-ng-data/* /usr/share/espeak-ng-data/ && \
     curl -LsSf https://astral.sh/uv/install.sh | sh && \
     mv /root/.local/bin/uv /usr/local/bin/ && \
     mv /root/.local/bin/uvx /usr/local/bin/ && \
-    curl https://sh.rustup.rs -sSf | sh -s -- -y && \
     useradd -m -u 1000 appuser && \
     mkdir -p /app/api/src/models/v1_0 && \
     chown -R appuser:appuser /app
 
 USER appuser
 WORKDIR /app
+
+# Install Rust for the non-root user so builds (e.g., sudachipy) succeed
+RUN curl https://sh.rustup.rs -sSf | sh -s -- -y
+
+# Ensure Cargo and the Python venv are on PATH; extend HTTP timeouts for uv
+ENV PATH="/home/appuser/.cargo/bin:/app/.venv/bin:$PATH" \
+    UV_HTTP_TIMEOUT=120 \
+    UV_HTTP_RETRIES=3
 
 # Copy dependency files
 COPY --chown=appuser:appuser pyproject.toml ./pyproject.toml
@@ -41,8 +48,7 @@ COPY --chown=appuser:appuser docker/scripts/ ./
 RUN chmod +x ./entrypoint.sh
 
 # Set environment variables
-ENV PATH="/home/appuser/.cargo/bin:/app/.venv/bin:$PATH" \
-    PYTHONUNBUFFERED=1 \
+ENV PYTHONUNBUFFERED=1 \
     PYTHONPATH=/app:/app/api \
     UV_LINK_MODE=copy \
     USE_GPU=false \

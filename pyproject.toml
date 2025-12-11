@@ -13,12 +13,15 @@ dependencies = [
     "pydantic-settings==2.7.0",
     "python-dotenv==1.0.1",
     "sqlalchemy==2.0.27",
+
     # ML/DL Base
-    "numpy>=1.26.0",
+    "numpy>=1.26,<2.0",
     "scipy==1.14.1",
+
     # Audio processing
     "soundfile==0.13.0",
     "regex==2024.11.6",
+
     # Utilities
     "aiofiles==23.2.1",
     "tqdm==4.67.1",
@@ -50,6 +53,7 @@ cpu = [
     "torch==2.7.1",
 ]
 l4t = [
+    # L4T 不通过 uv 装 torch，使用系统预装的 torch（来自 dustynv/l4t-pytorch）
 ]
 test = [
     "pytest==8.3.5",
@@ -67,11 +71,6 @@ conflicts = [
   [ { extra = "gpu" }, { extra = "l4t" } ],
 ]
 
-[dependency-groups]
-l4t = ["kokoro-fastapi[l4t]"]
-gpu = ["kokoro-fastapi[gpu]"]
-cpu = ["kokoro-fastapi[cpu]"]
-
 [tool.uv.sources]
 torch = [
     { index = "pytorch-cpu", extra = "cpu" },
@@ -87,6 +86,13 @@ explicit = true
 name = "pytorch-cuda"
 url = "https://download.pytorch.org/whl/cu129"
 explicit = true
+
+# ---- 这里是关键：用 dependency-groups 明确区分 cpu/gpu/l4t/test ----
+[dependency-groups]
+gpu = [".[gpu]"]
+cpu = [".[cpu]"]
+l4t = [".[l4t]"]
+test = [".[test]"]
 
 [build-system]
 requires = ["setuptools>=61.0"]

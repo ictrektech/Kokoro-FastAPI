@@ -47,13 +47,14 @@ dependencies = [
 
 [project.optional-dependencies]
 gpu = [
+    # GPU 环境：用 CUDA 12.8 对应的 cu128 轮子
     "torch==2.7.1+cu128",
 ]
 cpu = [
     "torch==2.7.1",
 ]
 l4t = [
-    # L4T 不通过 uv 装 torch，使用系统预装的 torch（来自 dustynv/l4t-pytorch）
+    # L4T 环境：不通过 uv 装 torch，用镜像里自带的 torch
 ]
 test = [
     "pytest==8.3.5",
@@ -84,15 +85,16 @@ explicit = true
 
 [[tool.uv.index]]
 name = "pytorch-cuda"
-url = "https://download.pytorch.org/whl/cu129"
+# 对应 PyTorch 官方 CUDA 12.8 / cu128 轮子
+url = "https://download.pytorch.org/whl/cu128"
 explicit = true
 
-# ---- 这里是关键：用 dependency-groups 明确区分 cpu/gpu/l4t/test ----
+# -------- 依赖分组（没有 split 了） --------
 [dependency-groups]
-gpu = [".[gpu]"]
-cpu = [".[cpu]"]
-l4t = [".[l4t]"]
-test = [".[test]"]
+gpu = ["kokoro-fastapi[gpu]"]
+cpu = ["kokoro-fastapi[cpu]"]
+l4t = ["kokoro-fastapi[l4t]"]
+test = ["kokoro-fastapi[test]"]
 
 [build-system]
 requires = ["setuptools>=61.0"]

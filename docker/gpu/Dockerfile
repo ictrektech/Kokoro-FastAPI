@@ -20,7 +20,7 @@ COPY --chown=appuser:appuser pyproject.toml ./pyproject.toml
 
 # Install dependencies with GPU extras
 RUN uv venv --python 3.10 && \
-    uv sync --extra gpu --no-cache
+    uv sync --group gpu --no-cache
 
 # Copy project files including models
 COPY --chown=appuser:appuser api ./api
